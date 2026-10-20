@@ -123,6 +123,26 @@ Deno.test(`${ID} category (recorded): the category filter reaches the wire`, asy
     assertEquals(output.vendors[0].vendor_category, "managed DNS provider");
 });
 
+Deno.test(`${ID} list_mode (recorded): the flat name list still counts as one enriched company`, async () => {
+    const unit = await testSealedUnit(ID);
+    const fixture = await loadFixture(`${fixturesDir}list-mode.json`);
+    const result = await runEndpoint({
+        unit,
+        input: { queryParams: { domain: "unifygtm.com", list_mode: true } },
+        mode: "replay",
+        fixture,
+    });
+    assertEquals(result.httpStatus, 200);
+    assertEquals(result.isProviderError, false);
+    assertEquals(result.usage, {
+        credits: { default: 1 },
+        evidence: { RESULT: 1 },
+    });
+    // list_mode returns names only (no categories or dates)
+    const output = result.output as { vendors: string[] };
+    assertEquals(output.vendors, ["AWS Route 53", "Metabase"]);
+});
+
 Deno.test(`${ID}: domain is required`, async () => {
     const unit = await testSealedUnit(ID);
     const fixture = await loadFixture(`${fixturesDir}happy.json`);
@@ -169,9 +189,7 @@ Deno.test({
             false,
             JSON.stringify(result.output),
         );
-        assertEquals(result.usage, {
-            credits: { default: 1 },
-            evidence: { RESULT: 1 },
-        });
+        // shape only: a live domain may legitimately enrich to nothing
+        assertEquals(Object.keys(result.usage.evidence), ["RESULT"]);
     },
 });

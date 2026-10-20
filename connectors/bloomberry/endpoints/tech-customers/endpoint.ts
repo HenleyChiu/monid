@@ -21,6 +21,15 @@ export default defineEndpoint({
             "`next_token`; 2 credits per company returned.",
         docsUrl: "https://docs.bloomberry.com/reference/get_accounts-tech-json",
         categories: ["technographics", "company-enrichment"],
+        notes: [
+            "`vendor_name` and `category` are mutually exclusive: pass " +
+            "exactly one. A request with neither or both is rejected by " +
+            "Bloomberry (422).",
+            "An unknown `vendor_name` comes back as HTTP 200 with an " +
+            "`error` body; the connector settles it as a 422 provider " +
+            "error with zero usage. Resolve exact spellings via " +
+            "/vendors/all_vendors.json.",
+        ],
     },
     request: { method: "GET", path: "/accounts/tech.json" },
     // `limit`: vendor default (20, the documented maximum) materialized at

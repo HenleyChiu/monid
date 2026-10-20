@@ -42,8 +42,9 @@ export default defineEndpoint({
         /** The promise is the one enrichment the call asks for. */
         estimate: () => ({ counts: { "RESULT": 1 } }),
         /** Settle on the wire: one enriched company if `vendors` holds
-         *  anything (list_mode=true returns a comma-separated string
-         *  instead of the envelope — non-empty text counts the same). */
+         *  anything. The docs say list_mode=true returns a bare
+         *  comma-separated string; observed 2026-10-20 it returns
+         *  `{vendors: [names]}` — both shapes count the same way. */
         evidence: ({ data, utils }) => {
             const vendors = utils.json.optionalLen(data.output, "$.vendors");
             const found = vendors !== undefined

@@ -24,6 +24,16 @@ export default defineEndpoint({
             "up to 20 via `next_token`; 10 credits per change returned.",
         docsUrl: "https://docs.bloomberry.com/reference/get_signals-tech-json",
         categories: ["technographics", "company-news"],
+        notes: [
+            "`vendor_name` and `category` are mutually exclusive: pass " +
+            "exactly one. `domain` takes precedence — when it is set the " +
+            "vendor selectors are ignored and the page is that company's " +
+            "own changes.",
+            "An unknown `vendor_name` comes back from Bloomberry as HTTP " +
+            "200 with an `error` body; the connector settles it as a 422 " +
+            "provider error with zero usage. Resolve exact spellings via " +
+            "/vendors/all_vendors.json.",
+        ],
     },
     request: { method: "GET", path: "/signals/tech.json" },
     // `limit` is the estimate's whole basis: the vendor default (20, the

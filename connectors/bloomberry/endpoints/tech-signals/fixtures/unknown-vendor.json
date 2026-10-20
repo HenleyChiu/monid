@@ -1,6 +1,6 @@
 {
-    "name": "happy",
-    "description": "raw recording (bloomberry#signals/tech.json, scenario happy) — hand-minimize into a shared chain before committing",
+    "name": "unknown-vendor",
+    "description": "raw recording (bloomberry#signals/tech.json, scenario unknown-vendor) \u2014 hand-minimize into a shared chain before committing",
     "calls": [
         {
             "req": {

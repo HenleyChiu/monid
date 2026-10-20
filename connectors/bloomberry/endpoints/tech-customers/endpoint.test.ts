@@ -1,4 +1,4 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertRejects } from "@std/assert";
 import { fromFileUrl } from "@std/path";
 import {
     estimateEndpoint,
@@ -39,7 +39,7 @@ Deno.test(`${ID} happy (recorded): 2 credits per company; size bands go ';'-sepa
     assertEquals(output.users[0].vendor_name, "Clay Web Intent");
 });
 
-Deno.test(`${ID} estimate: page size × 2 credits`, async () => {
+Deno.test(`${ID} estimate: page size × 2 credits; the vendor maximum (20) passes`, async () => {
     const unit = await testSealedUnit(ID);
     assertEquals(
         await estimateEndpoint(unit, {
@@ -47,6 +47,44 @@ Deno.test(`${ID} estimate: page size × 2 credits`, async () => {
         }),
         { credits: { default: 4 }, evidence: { RESULT: 2 } },
     );
+    assertEquals(
+        await estimateEndpoint(unit, {
+            queryParams: { vendor_name: "Clay Web Intent", limit: 20 },
+        }),
+        { credits: { default: 40 }, evidence: { RESULT: 20 } },
+    );
+});
+
+Deno.test(`${ID}: limit above the vendor's 20-row page is rejected`, async () => {
+    const unit = await testSealedUnit(ID);
+    const fixture = await loadFixture(`${fixturesDir}happy.json`);
+    await assertRejects(
+        () =>
+            runEndpoint({
+                unit,
+                input: {
+                    queryParams: { vendor_name: "Clay Web Intent", limit: 21 },
+                },
+                mode: "replay",
+                fixture,
+            }),
+        Error,
+        "INVALID_INPUT",
+    );
+});
+
+Deno.test(`${ID} provider error (recorded 401): zero usage`, async () => {
+    const unit = await testSealedUnit(ID);
+    const fixture = await loadFixture(`${fixturesDir}provider-error.json`);
+    const result = await runEndpoint({
+        unit,
+        input: { queryParams: { vendor_name: "Clay Web Intent", limit: 2 } },
+        mode: "replay",
+        fixture,
+    });
+    assertEquals(result.httpStatus, 401);
+    assertEquals(result.isProviderError, true);
+    assertEquals(result.usage, { credits: {}, evidence: {} });
 });
 
 Deno.test(`${ID} empty (recorded): no matching company bills nothing`, async () => {
